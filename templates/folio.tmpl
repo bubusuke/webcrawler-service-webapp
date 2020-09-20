@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="jp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folioのテーマ別銘柄一覧</title>
+</head>
+<body>
+    <div id="themes">
+        <label>テーマを選択してください。
+        </label>
+        <form action="/folio" method="get">
+            <select id="themeSelector" name="theme">
+                {{range .themes}}
+                <option value="{{.Id}}" {{if .IsSelected}} selected {{end}}>{{ .Title }}</option>
+                {{end}}
+            </select>
+            <input type="submit" value="Search">
+        </form>
+        
+
+        <ul>
+            <label>{{.themeDetail.Title}}</label>
+            {{range .themeDetail.Stocks}}
+            <li>{{.}}</li>
+            {{end}}
+        </ul>
+
+    </div>
+</body>
+</html>
