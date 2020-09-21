@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/bubusuke/webcrawler-service/folio"
+	"github.com/bubusuke/webcrawler-service-webapp/folio"
 	"github.com/gin-gonic/gin"
 )
 
