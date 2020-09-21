@@ -20,8 +20,4 @@ COPY . .
 # Copy builded binary file
 COPY --from=builder /go/src/github.com/bubusuke/webcrawler-service/webcrawler-service ./webcrawler-service
 
-ENV GIN_MODE=release
-ENV APP_PORT=8080
-EXPOSE 8080
-
 ENTRYPOINT [ "./webcrawler-service" ]
