@@ -8,8 +8,8 @@ See [README of webcrawler-service](https://github.com/bubusuke/webcrawler-servic
 * Prepare a postgres database.
 * Execute [DDL](https://github.com/bubusuke/webcrawler-service/tree/master/initdb.d). 
 
-### 2. Build
-```
+### 2. Build and run
+```sh
 # Build
 go get github.com/bubusuke/webcrawler-service-webapp
 cd ${your go path}/src/github.com/bubusuke/webcrawler-service-webapp
