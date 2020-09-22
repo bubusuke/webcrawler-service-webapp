@@ -12,7 +12,7 @@
         <form action="/folio" method="get">
             <select id="themeSelector" name="theme">
                 {{range .themes}}
-                <option value="{{.Id}}" {{if .IsSelected}} selected {{end}}>{{ .Title }}</option>
+                <option value="{{.ThemeID}}" {{if .IsSelected}} selected {{end}}>{{ .Title }}</option>
                 {{end}}
             </select>
             <input type="submit" value="Search">

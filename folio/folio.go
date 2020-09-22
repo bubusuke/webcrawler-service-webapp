@@ -1,18 +1,16 @@
 package folio
 
 import (
-	"io/ioutil"
-	"log"
-	"strings"
-
-	"github.com/PuerkitoBio/goquery"
+	"github.com/bubusuke/webcrawler-service-webapp/db"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 )
 
 type Themes []Theme
 
 type Theme struct {
-	Id         string
-	Title      string
+	ThemeID    string `db:"theme_id"`
+	Title      string `db:"title"`
 	IsSelected bool
 }
 
@@ -21,70 +19,68 @@ type ThemeDetail struct {
 	Stocks []string
 }
 
-const theme_url = "https://folio-sec.com/theme"
+func GetThemes(queryID string) (Themes, error) {
 
-func ReadThemes(queryId string, path string) Themes {
-	f, err := ioutil.ReadFile(path)
+	query := "SELECT theme_id, title FROM themes ORDER BY seq"
+	db, err := sqlx.Connect("postgres", db.GetDbInfo())
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
-	stringReader := strings.NewReader(string(f))
-	doc, err := goquery.NewDocumentFromReader(stringReader)
+	rows, err := db.Queryx(query)
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
-	selection := doc.Find("a.gtm-theme-detail")
 
 	ths := make([]Theme, 0, 100)
-	selection.Each(func(i int, s *goquery.Selection) {
-		attr, _ := s.Attr("href")
-		th := Theme{
-			Id:         strings.Replace(attr, "/theme/", "", 1),
-			Title:      s.Find("h1").Text(),
-			IsSelected: false,
+	th := Theme{}
+	for rows.Next() {
+		err := rows.StructScan(&th)
+		if err != nil {
+			return nil, err
 		}
-		if th.Id == queryId {
+		if th.ThemeID == queryID {
 			th.IsSelected = true
+		} else {
+			th.IsSelected = false
 		}
 		ths = append(ths, th)
-	})
-
-	return ths
+	}
+	return ths, nil
 }
 
-func (ths *Themes) getTitle(queryId string) string {
+func (ths *Themes) getTitle(queryID string) string {
 	for _, th := range *ths {
-		if th.Id == queryId {
+		if th.ThemeID == queryID {
 			return th.Title
 		}
 	}
 	return ""
 }
 
-// TODO: 動的サイトのクローラ機能実装が必要
-// func CrawlThemes(queryTheme string) []Theme {
-// }
-
-func (ths *Themes) CrawlThemesDetail(queryId string) (ThemeDetail, error) {
-
-	td := ThemeDetail{
-		Title:  ths.getTitle(queryId),
-		Stocks: make([]string, 0, 10),
-	}
-	if td.Title == "" {
+func (ths *Themes) GetThemesDetails(queryID string) (ThemeDetail, error) {
+	if ths.getTitle(queryID) == "" {
 		return ThemeDetail{}, nil
 	}
 
-	targetUrl := theme_url + "/" + queryId
-	doc, err := goquery.NewDocument(targetUrl)
+	td := ThemeDetail{
+		Title:  ths.getTitle(queryID),
+		Stocks: make([]string, 0, 20),
+	}
+	query := "SELECT title FROM theme_details WHERE theme_id = :theme_id ORDER BY detail_id"
+	db, err := sqlx.Connect("postgres", db.GetDbInfo())
 	if err != nil {
 		return ThemeDetail{}, err
 	}
-	selection := doc.Find("table")
-	selection = selection.Find("button.gtm-stock-detail")
-	selection.Each(func(i int, s *goquery.Selection) {
-		td.Stocks = append(td.Stocks, s.Text())
-	})
-
+	rows, err := db.NamedQuery(query, map[string]interface{}{"theme_id": queryID})
+	if err != nil {
+		return ThemeDetail{}, err
+	}
+	var stock string
+	for rows.Next() {
+		if err := rows.Scan(&stock); err != nil {
+			return ThemeDetail{}, err
+		}
+		td.Stocks = append(td.Stocks, stock)
+	}
 	return td, nil
 }
