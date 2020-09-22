@@ -1,25 +1,21 @@
 package main
 
 import (
-	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"strings"
-	"sync"
 
 	"github.com/bubusuke/webcrawler-service-webapp/folio"
 	"github.com/gin-gonic/gin"
 )
 
-type templateHandler struct {
-	once     sync.Once
-	filename string
-	templ    *template.Template
-}
-
+// appPort is port parameter of this web application.
+// default value is :8080.
 var appPort string
 
+// init sets log format and read env.
+// APP_PORT accepts either ":XXXX" or "XXXX".
 func init() {
 	log.SetFlags(log.LstdFlags | log.Llongfile)
 	log.SetPrefix("webapp ")
@@ -28,11 +24,12 @@ func init() {
 		appPort = "8080"
 	}
 
-	// Either A or B can be accepted.
+	// Either ":XXXX" or "XXXX" can be accepted.
 	appPort = strings.Replace(appPort, ":", "", 1)
 	appPort = ":" + appPort
 }
 
+// main starts server process and handles request.
 func main() {
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*.tmpl")

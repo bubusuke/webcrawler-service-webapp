@@ -6,19 +6,29 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// Themes represents Folio's Investment-Theme List.
 type Themes []Theme
 
+// Theme represents one of Folio's Investment-Themes.
 type Theme struct {
-	ThemeID    string `db:"theme_id"`
-	Title      string `db:"title"`
+	// ThemeID is URI resource name of the theme.
+	ThemeID string `db:"theme_id"`
+	// Title is Theme Name. Title may have multi byte character.
+	Title string `db:"title"`
+	// IsSelected represent whether it is selected on the web application.
+	// It is prepared for html drawing.
 	IsSelected bool
 }
 
+// ThemeDetail represents the investment stocks in the Folio Investment Themes.
 type ThemeDetail struct {
-	Title  string
+	// Title is the theme's name. Not stock name.
+	Title string
+	// Stocks represents name of stocks in the Folio Investment Themes.
 	Stocks []string
 }
 
+// GetThemes gets Themes from DB and returns them.
 func GetThemes(queryID string) (Themes, error) {
 
 	query := "SELECT theme_id, title FROM themes ORDER BY seq"
@@ -48,6 +58,7 @@ func GetThemes(queryID string) (Themes, error) {
 	return ths, nil
 }
 
+// getTitle returns the theme name that corresponds to URI resource name.
 func (ths *Themes) getTitle(queryID string) string {
 	for _, th := range *ths {
 		if th.ThemeID == queryID {
@@ -57,8 +68,12 @@ func (ths *Themes) getTitle(queryID string) string {
 	return ""
 }
 
+// GetThemesDetails gets name of stocks that corresponds to the theme from DB.
+// And returns them.
 func (ths *Themes) GetThemesDetails(queryID string) (ThemeDetail, error) {
+
 	if ths.getTitle(queryID) == "" {
+		// Initial display corresponds to this case.
 		return ThemeDetail{}, nil
 	}
 

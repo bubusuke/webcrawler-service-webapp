@@ -6,6 +6,7 @@ import (
 	"os"
 )
 
+// dbParam represents Database connecting parameters.
 type dbParam struct {
 	host     string
 	port     string
@@ -14,8 +15,10 @@ type dbParam struct {
 	password string
 }
 
+// param manages dbParam with a singleton.
 var param dbParam
 
+// init reads env and create param.
 func init() {
 	param = dbParam{
 		host:     ifBlank(os.Getenv("DB_HOST"), "localhost"),
@@ -28,6 +31,7 @@ func init() {
 	log.Println("DB information:", GetDbInfo())
 }
 
+// GetDbInfo returns database connection string.
 func GetDbInfo() string {
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		param.host, param.port, param.user, param.password, param.dbname)
